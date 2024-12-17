@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form with Rules</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: calc(100% - 80px);
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+            width: 73%;
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-actions button:hover {
+            background-color: #218838;
+        }
+
+        /* Popup styling */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-sections {
+            display: flex;
+        }
+
+        .popup-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            justify-content: space-between;
+        }
+
+        #scope {
+            margin-top: 17px;
+        }
+
+        .popup-section {
+            width: 48%;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .popup-section h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #scope-input {
+            margin-top: 17px;
+        }
+
+        .popup-section input {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .popup-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .popup-actions button {
+            padding: 10px 15px;
+            font-size: 14px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup-actions .save-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .popup-actions .cancel-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .popup-actions button:hover {
+            opacity: 0.9;
+        }
+
+        #conditions-list {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+         #type{
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h3>Status: <span th:text="${status}">Status</span></h3>
+        <h2>Form</h2>
+        <form th:action="@{/api/register}" method="post"
+            onsubmit="handleSubmit(event)">
+            <div class="form-group">
+                <label for="url">URL:</label>
+                <input type="text" id="url" name="url" placeholder="Enter URL" required>
+            </div>
+
+            <div class="form-group">
+                <label for="method">Method:</label>
+                <select id="method" name="method" required>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+
+            <div class="form-group rules">
+                <label>Rules:</label>
+                <button type="button" id="add-rule-btn" onclick="showPopup()">Add Rule</button>
+
+            </div>
+
+            <!-- Hidden field to store JSON data -->
+            <input type="hidden" id="hiddenData" th:name="rulesJson">
+
+            <div id="conditions-list"></div>
+
+            <div class="form-actions">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Popup HTML -->
+    <div class="popup" id="popup">
+        <form on class="popup-content">
+            <div class="popup-sections">
+                <div class="popup-section" id="condition-section">
+                    <h3>Condition</h3>
+                    <label for="type">Type:</label>
+                    <select id="type" required>
+                        <option value="" disabled selected>Select Type</option>
+                        <option value="REQUEST_BODY">Request Body</option>
+                        <option value="QUERY_PARAM">Query Param</option>
+                        <option value="DIRECT_API">Direct Apis</option>
+                    </select>
+                    <label for="key">Key:</label>
+                    <input type="text" id="key" placeholder="Enter key">
+                    <label for="value">Value:</label>
+                    <input type="text" id="value" placeholder="Enter value">
+                </div>
+                <div class="popup-section" id="scope-section">
+                    <h3>Scope</h3>
+                    <input type="text" id="scope" placeholder="Enter scope">
+                </div>
+            </div>
+            <div class="popup-actions">
+                <button type="button" class="cancel-btn" onclick="closePopup()">Cancel</button>
+                <button type="button" class="save-btn" onclick="saveRule()">Save</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+
+
+        let rulesArray = []; // Array to store all rules
+        let returnValue = { url: null, httpMethod: null, rules: [] }; // Persistent returnValue object
+        let selectedType = ''; // Variable to store the selected type
+
+        // Function to display the popup
+        function showPopup() {
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        // Function to close the popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        // Function to save the rule
+        function saveRule() {
+
+            const type = document.getElementById('type').value.trim();
+            const key = document.getElementById('key').value.trim();
+            const value = document.getElementById('value').value.trim();
+            const scope = document.getElementById('scope').value.trim();
+
+            // Validate inputs
+            if (!type || !key || !value || !scope) {
+                alert('All fields are required!');
+                return;
+            }
+
+            // Create the rule object
+            const rule = {
+                condition: {
+                    type: type,
+                    key: key,
+                    value: value
+                },
+                scope: scope
+            };
+
+            // Add the rule to the rules array
+            rulesArray.push(rule);
+
+            returnValue.rules = [...rulesArray];
+            // Clear input fields
+            document.getElementById('type').value = '';
+            document.getElementById('key').value = '';
+            document.getElementById('value').value = '';
+            document.getElementById('scope').value = '';
+
+            // Close the popup
+            closePopup();
+
+            // Update the conditions list
+            updateConditionsList();
+        }
+
+        // Function to update the list of conditions
+        function updateConditionsList() {
+            const conditionsList = document.getElementById('conditions-list');
+            conditionsList.innerHTML = ''; // Clear existing list
+
+            rulesArray.forEach((rule, index) => {
+                const conditionElement = document.createElement('p');
+                conditionElement.textContent = `Rule ${index + 1}: ${rule.condition.type}`;
+                conditionsList.appendChild(conditionElement);
+            });
+        }
+
+        // Function to handle form submit
+        function handleSubmit(event) {
+
+            // Prevent default form submission
+            event.preventDefault();
+
+            // Collect form data
+            const url = document.getElementById('url').value.trim();
+            const method = document.getElementById('method').value.trim();
+
+            returnValue.url = url;
+            returnValue.httpMethod = method;
+
+            // Add rules from rulesArray to the returnValue object
+            returnValue.rules = [...rulesArray]; // Copy the rules array
+
+            // Convert the returnValue object to a JSON string
+            const jsonData = JSON.stringify(returnValue);
+
+            console.log("Data ",jsonData);
+            
+
+            // Set the JSON string in the hidden input field
+            document.getElementById('hiddenData').value = jsonData;
+            console.log("Submitting data:", document.getElementById("hiddenData").value);
+
+            // Submit the form manually
+            event.target.submit();
+        }
+    </script>
+</body>
+
+</html>

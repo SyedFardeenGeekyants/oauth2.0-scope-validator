@@ -1,0 +1,51 @@
+{
+  "dynamicApis": [
+    {
+      "pathPattern": "/user/profile",
+      "httpMethod": "POST",
+      "rules": [
+        {
+          "condition": {
+            "type" : "requestBody",
+            "key": "operation",
+            "value" : "update"
+          },
+          "scope" : "update_profile"
+        },
+        {
+          "condition": {
+            "type" : "requestBody",
+            "key": "operation",
+            "value" : "add"
+          },
+          "scope" : "add_profile"
+        }
+      ]
+    },
+    {
+      "pathPattern": "/user/profile",
+      "httpMethod": "GET",
+      "rules": [
+        {
+          "condition": {
+            "type" : "directApi"
+          },
+          "scope" : "read_profile"
+        }
+      ]
+    },
+    {
+      "pathPattern": "/user/profile",
+      "httpMethod": "DELETE",
+      "rules": [
+        {
+          "condition": {
+            "type" : "directApi"
+          },
+          "scope" : "delete_profile"
+        }
+      ]
+    }
+
+  ]
+}

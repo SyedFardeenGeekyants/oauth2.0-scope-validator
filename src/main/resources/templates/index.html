@@ -190,6 +190,9 @@
             margin-bottom: 10px;
             box-sizing: border-box;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -238,16 +241,19 @@
                 <div class="popup-section" id="condition-section">
                     <h3>Condition</h3>
                     <label for="type">Type:</label>
-                    <select id="type" required>
+                    <select  id="type" onchange="toggleFields()" required>
                         <option value="" disabled selected>Select Type</option>
                         <option value="REQUEST_BODY">Request Body</option>
                         <option value="QUERY_PARAM">Query Param</option>
                         <option value="DIRECT_API">Direct Apis</option>
                     </select>
-                    <label for="key">Key:</label>
-                    <input type="text" id="key" placeholder="Enter key">
-                    <label for="value">Value:</label>
-                    <input type="text" id="value" placeholder="Enter value">
+                    <div id = "keyValueContainer">
+                        <label for="key">Key:</label>
+                        <input type="text" id="key" placeholder="Enter key">
+                        <label for="value">Value:</label>
+                        <input type="text" id="value" placeholder="Enter value">
+                    </div>
+
                 </div>
                 <div class="popup-section" id="scope-section">
                     <h3>Scope</h3>
@@ -279,6 +285,18 @@
             document.getElementById('popup').style.display = 'none';
         }
 
+        function toggleFields() {
+            const apiType = document.getElementById("type").value;
+            const keyValueContainer = document.getElementById("keyValueContainer");
+
+            // Hide key-value container when Direct API is selected
+              if (apiType === "DIRECT_API") {
+                keyValueContainer.classList.add("hidden");
+              } else {
+                keyValueContainer.classList.remove("hidden");
+              }
+        }
+
         // Function to save the rule
         function saveRule() {
 
@@ -288,7 +306,7 @@
             const scope = document.getElementById('scope').value.trim();
 
             // Validate inputs
-            if (!type || !key || !value || !scope) {
+            if (!type || !scope) {
                 alert('All fields are required!');
                 return;
             }

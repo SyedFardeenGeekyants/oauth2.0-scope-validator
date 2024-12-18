@@ -26,6 +26,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +110,7 @@ public class DynamicScopeFilter extends OncePerRequestFilter {
 
         // Check dynamic APIs
         for (ApiRule apiRule : allApiRules) {
-            String pathPattern = apiRule.getUrl();
+            String pathPattern = extractApiPath(apiRule.getUrl());
             String method = apiRule.getMethod();
 
             if (matchesPathPattern(pathPattern, requestUri) && method.equalsIgnoreCase(httpMethod)) {
@@ -119,6 +121,16 @@ public class DynamicScopeFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    private String extractApiPath(String url){
+        URI uri = null;
+        try {
+            uri = new URI(url);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        return uri.getPath();
     }
 
     private boolean matchesPathPattern(String pathPattern, String requestUri) {
@@ -142,7 +154,7 @@ public class DynamicScopeFilter extends OncePerRequestFilter {
 
             switch (type) {
                 case Constants.DIRECT_API:
-                    if (Objects.nonNull(requestBody)){
+                    if (!requestBody.isEmpty() ){
                         continue;
                     }
                     return rule.getScope();

@@ -1,5 +1,6 @@
 package com.authentication.oauth2.__Resource_Server.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,16 @@ public class RestControllers {
     @DeleteMapping("/profile")
     public String deleteProfile(){
         return "Profile deleted successfully!";
+    }
+
+    @GetMapping("/v2/profile")
+    public String pathParamApis(@RequestParam("operation") String operation, @RequestParam("name") String name){
+        return "GET.profile fetch from path param apis";
+    }
+
+    @PostMapping(value = "/v2/profile",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public String formRequest(ProfileRequest profileRequest){
+        return "POST.profile fetch from form body apis";
     }
 
 }

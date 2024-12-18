@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class DynamicScopeFilter extends OncePerRequestFilter {
@@ -210,11 +212,14 @@ public class DynamicScopeFilter extends OncePerRequestFilter {
 
             Map<String, String> dataMap = new HashMap<>();
 
-            String[] pairs = request.getBody().split("&");
+            String req = request.getBody();
+            Pattern pattern = Pattern.compile("([a-zA-Z0-9_]+)=([a-zA-Z0-9_]+)");
+            Matcher matcher = pattern.matcher(req);
 
-            for (String pair : pairs) {
-                String[] keyValue = pair.split("=");
-                dataMap.put(keyValue[0], keyValue[1]);
+            while (matcher.find()) {
+                String key = matcher.group(1);
+                String value = matcher.group(2);
+                dataMap.put(key,value);
             }
 
             return mapper.valueToTree(dataMap);
